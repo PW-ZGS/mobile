@@ -33,7 +33,7 @@ class SelectScreen extends StatelessWidget {
               child: ElevatedButton(
                 child: Text('Passenger'),
                 onPressed: () {
-                  
+                  Navigator.pushNamed(context, '/passenger');
                 },
               ),
             ),

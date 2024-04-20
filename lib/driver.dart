@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:regis_mobile/screen_frame.dart';
 
-Future<List<Route>> fetchData() async {
+Future<List<DriverRoute>> fetchData() async {
   await Future.delayed(Duration(seconds: 1));
-  return [Route(id: 2137), Route(id: 420), Route(id: 33)];
+  return [DriverRoute(id: 2137), DriverRoute(id: 420), DriverRoute(id: 33)];
 }
-class Route
+class DriverRoute
 {
   final int id;
   final String subtitle;
-  Route({required this.id, this.subtitle = 'From A to B'});
+  DriverRoute({required this.id, this.subtitle = 'From A to B'});
 }
 
 class RouteTile extends StatelessWidget {
   const RouteTile({Key? key, required this.route}) : super(key: key);
 
-  final Route route;
+  final DriverRoute route;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +33,10 @@ class RouteTile extends StatelessWidget {
             title: Text('Route ${route.id}'),
             subtitle: Text(route.subtitle),
             trailing: Icon(Icons.arrow_forward),
+            onTap: () => 
+            {
+              Navigator.pushNamed(context, '/driver/route', arguments: route)
+            },
           ),
         ),
       ),
@@ -49,7 +53,7 @@ class DriverScreen extends StatefulWidget {
 class _DriverScreenState extends State<DriverScreen> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
-  Future<List<Route>> _refreshData() async {
+  Future<List<DriverRoute>> _refreshData() async {
     setState(() {});
     return fetchData();
   }
@@ -68,9 +72,9 @@ class _DriverScreenState extends State<DriverScreen> {
       body: RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _refreshData,
-        child: FutureBuilder<List<Route>>(
+        child: FutureBuilder<List<DriverRoute>>(
           future: fetchData(),
-          builder: (BuildContext context, AsyncSnapshot<List<Route>> snapshot) {
+          builder: (BuildContext context, AsyncSnapshot<List<DriverRoute>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
