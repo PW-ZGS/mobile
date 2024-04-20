@@ -18,7 +18,7 @@ void main() async {
   
   runApp(
     ChangeNotifierProvider<APIProvider>(
-      create: (context) => APIProvider('http://localhost:8080'),
+      create: (context) => APIProvider('http://18.199.107.206:30490'),
       child: MyApp()
     )
   );
@@ -71,10 +71,22 @@ class StartScreen extends StatelessWidget {
                 Navigator.pushNamed(context, '/signup');
                 return;
               }
-              var reply = await context.read<APIProvider>().api.getDefaultApi()
-                  .usersValidationGet(userId: hash);
+              var reply;
+              try
+              {
+                var reply = await context.read<APIProvider>().api.getDefaultApi()
+                    .usersValidationGet(userId: hash);
+              }
+              catch (e)
+              {
+                print('Error on request');
+                prefs.remove('user_hash');
+                Navigator.pushNamed(context, '/signup');
+                return;
+              }
               if (reply.statusCode == null)
               {
+                prefs.remove('user_hash');
                 Navigator.pushNamed(context, '/signup');
                 return;
               }

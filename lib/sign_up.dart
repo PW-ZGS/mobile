@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:openapi/openapi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screen_frame.dart';
-import 'package:openapi/openapi.dart';
+import 'api_provider.dart';
+import 'package:provider/provider.dart';
 
 
 class SignUpScreen extends StatefulWidget {
@@ -82,9 +84,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     print('Name: ${_nameController.text}');
                     print('Contact: ${_contactController.text}');
                     if (_formKey.currentState!.validate()) {
-                      SharedPreferences.getInstance().then((prefs) {
-                        prefs.setString('user_hash', '1234');
-                        Navigator.pushNamed(context, '/select');
+                      SharedPreferences.getInstance().then((prefs) async {
+                        prefs.setString('user_name', _nameController.text);
+                        var builder = UsersPostRequestBuilder();
+                        builder.name = _nameController.text;
+                        builder.contact = _contactController.text;
+                        builder.build();
+                        var usersPostRequest = builder.build();
+                        var reply = await context.read<APIProvider>().api.getDefaultApi()
+                          .usersPost(usersPostRequest: usersPostRequest);
+
+                        if (reply.data != null && reply.data!.userId != null) {
+                          prefs.setString('user_hash', reply.data!.userId!);
+                          Navigator.pushNamed(context, '/select');
+                        }
                       });
                     }
                   },
