@@ -16,6 +16,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return ScreenFrame(
+      canPop: false,
       title: 'SignUpScreen',
       body: Container(
         padding: EdgeInsets.all(20),

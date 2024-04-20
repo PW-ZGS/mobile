@@ -4,7 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'sign_up.dart';
 import 'select.dart';
+import 'driver.dart';
 import 'screen_frame.dart';
+import 'driver_add_route.dart';
 
 void main() async {
   
@@ -31,6 +33,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => StartScreen(),
         '/select': (context) => SelectScreen(),
         '/signup': (context) => SignUpScreen(),
+        '/driver': (context) => DriverScreen(),
+        '/driver/add_route': (context) => DriverAddRouteScreen(),
       },
     );
   }
@@ -40,6 +44,7 @@ class StartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenFrame(
+      canPop: false,
       title: 'Start Screen',
       body: Center(
         child: ElevatedButton(

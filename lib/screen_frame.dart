@@ -4,24 +4,28 @@ import 'package:flutter/material.dart';
 
 
 class ScreenFrame extends StatelessWidget {
-  const ScreenFrame({super.key, required this.title, required this.body});
+  const ScreenFrame({super.key, required this.title, required this.body, this.FAB = null, this.canPop = false});
 
   final String title;
   final Widget body;
+  final bool canPop;
+  final Widget? FAB;
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvoked:(didPop) => FlutterAppMinimizer.minimize(),
-      child: Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        leading: null,
-        automaticallyImplyLeading: false
+        // leading: null,
+        // automaticallyImplyLeading: true,
       ),
-      body: body
-      )
-    );
+      body: body,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 25.0),
+        child: FAB,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+      );
   }
 }

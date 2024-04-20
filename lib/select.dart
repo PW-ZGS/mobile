@@ -8,6 +8,7 @@ class SelectScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenFrame(
+      canPop: false,
       title: 'SelectScreen',
       body: Container(
         padding: EdgeInsets.all(20),
@@ -22,7 +23,7 @@ class SelectScreen extends StatelessWidget {
               child: ElevatedButton(
                 child: Text('Driver'),
                 onPressed: () {
-                  
+                  Navigator.pushNamed(context, '/driver');
                 },
               ),
             ),
