@@ -20,7 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return ScreenFrame(
       canPop: false,
-      title: 'SignUpScreen',
+      title: 'Sign up',
       body: Container(
         padding: EdgeInsets.all(20),
         child: Form(

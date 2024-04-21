@@ -34,7 +34,7 @@ class DesireTile extends StatelessWidget {
           ),
           child: ListTile(
             title: Text('Desire ${desire.passengerRouteId!.substring(0, 3)}'),
-            subtitle: Text('From: ${desire.startPoint!.latitude}, ${desire.startPoint!.longitude}\nTo: ${desire.endPoint!.longitude}, ${desire.endPoint!.longitude}'),  
+            subtitle: Text('From: ${desire.startPoint!.latitude!.toStringAsFixed(5)}, ${desire.startPoint!.longitude!.toStringAsFixed(5)}\nTo: ${desire.endPoint!.longitude!.toStringAsFixed(5)}, ${desire.endPoint!.longitude!.toStringAsFixed(5)}'),  
             trailing: Icon(Icons.arrow_forward),
             onTap: () => 
             {
@@ -85,7 +85,8 @@ class _PassengerScreenState extends State<PassengerScreen> {
               return Text('Error: ${snapshot.error}');
             } else {
               return snapshot.data!.isEmpty ?
-                Center(child: Text('Currently no desires found. Add your first desire!')) :
+                Center(child: Text('No desires added yet. \nAdd your first desire!',
+                  style: TextStyle(fontSize: 24),),) :
                ListView.builder(
                 itemCount: snapshot.data?.length,
                 itemBuilder: (context, index) {
