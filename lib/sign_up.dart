@@ -60,7 +60,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     TextFormField(
                       controller: _contactController,
                       keyboardType: TextInputType.multiline,
-                      maxLines: 5,
+                      maxLines: 3,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Enter a contact information',
