@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:openapi/openapi.dart';
+import 'package:provider/provider.dart';
+import 'package:regis_mobile/api_provider.dart';
 import 'package:regis_mobile/screen_frame.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List<Desire>> fetchData() async {
-  await Future.delayed(Duration(seconds: 1));
-  return [Desire(id: 2137), Desire(id: 420), Desire(id: 33)];
-}
-class Desire
-{
-  final int id;
-  final String subtitle;
-  Desire({required this.id, this.subtitle = 'From A to B'});
+Future<List<PassengerRoute>> fetchData(BuildContext context) async {
+  var prefs = await SharedPreferences.getInstance();
+  var user_id = prefs.getString('user_hash');
+  var routes = (await context.read<APIProvider>().api.getDefaultApi()
+                    .passengerRoutesByUsersUserIdGet(userId: user_id!))
+                    .data?.toList() ?? [];
+
+  return routes;
 }
 
 class DesireTile extends StatelessWidget {
   const DesireTile({Key? key, required this.desire}) : super(key: key);
 
-  final Desire desire;
+  final PassengerRoute desire;
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +30,11 @@ class DesireTile extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.circular(10),
-            color: Colors.lightGreen
+            color: Theme.of(context).secondaryHeaderColor
           ),
           child: ListTile(
-            title: Text('Route ${desire.id}'),
-            subtitle: Text(desire.subtitle),
+            title: Text('Desire ${desire.passengerRouteId!.substring(0, 3)}'),
+            subtitle: Text('From: ${desire.startPoint!.latitude}, ${desire.startPoint!.longitude}\nTo: ${desire.endPoint!.longitude}, ${desire.endPoint!.longitude}'),  
             trailing: Icon(Icons.arrow_forward),
             onTap: () => 
             {
@@ -53,9 +56,9 @@ class PassengerScreen extends StatefulWidget {
 class _PassengerScreenState extends State<PassengerScreen> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
-  Future<List<Desire>> _refreshData() async {
+  Future<List<PassengerRoute>> _refreshData(BuildContext context) async {
     setState(() {});
-    return fetchData();
+    return fetchData(context);
   }
 
   @override
@@ -68,19 +71,22 @@ class _PassengerScreenState extends State<PassengerScreen> {
           Navigator.pushNamed(context, '/passenger/add_desire');
         },
         child: Icon(Icons.add),
+        backgroundColor: Theme.of(context).secondaryHeaderColor,
       ),
       body: RefreshIndicator(
         key: _refreshIndicatorKey,
-        onRefresh: _refreshData,
-        child: FutureBuilder<List<Desire>>(
-          future: fetchData(),
-          builder: (BuildContext context, AsyncSnapshot<List<Desire>> snapshot) {
+        onRefresh: () =>_refreshData(context),
+        child: FutureBuilder<List<PassengerRoute>>(
+            future: fetchData(context),
+          builder: (BuildContext context, AsyncSnapshot<List<PassengerRoute>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
             } else {
-              return ListView.builder(
+              return snapshot.data!.isEmpty ?
+                Center(child: Text('Currently no desires found. Add your first desire!')) :
+               ListView.builder(
                 itemCount: snapshot.data?.length,
                 itemBuilder: (context, index) {
                   return DesireTile(desire: snapshot.data![index]);

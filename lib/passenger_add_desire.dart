@@ -1,9 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:openapi/openapi.dart';
+import 'package:provider/provider.dart';
+import 'package:regis_mobile/api_provider.dart';
+import 'package:regis_mobile/geocode.dart';
 import 'package:regis_mobile/screen_frame.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'offices.dart';
 
 class Office
 {
@@ -24,14 +29,7 @@ class _PassengerAddDesireScreenState extends State<PassengerAddDesireScreen> {
   TimeOfDay time_to = TimeOfDay(hour: 9, minute: 0);
   var distance = 500;
   int temp_distance = 100;
-
-
-  Future<List<Office>> fetch_offices() async
-  {
-
-    await Future.delayed(Duration(seconds: 1));
-    return [Office(id: 1, name: 'Office 1'), Office(id: 2, name: 'Office 2')];
-  }
+  String? office_id = null;
 
   void pickValue() {
     showDialog<int>(
@@ -167,26 +165,33 @@ class _PassengerAddDesireScreenState extends State<PassengerAddDesireScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [ 
                     Text('To office'),
-                    FutureBuilder<List<Office>>(
-                      future: fetch_offices(),
-                      builder: (BuildContext context, AsyncSnapshot<List<Office>> snapshot) {
+                    FutureBuilder<List<OfficesGet200ResponseInner>>(
+                      future: fetch_offices(context),
+                      builder: (BuildContext context, AsyncSnapshot<List<OfficesGet200ResponseInner>> snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return Center(child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
                         } else {
-                          return DropdownButtonFormField<Office>(
+                          return DropdownButtonFormField<OfficesGet200ResponseInner>(
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: 'Select an address',
                                 ),
-                                items: snapshot.data?.map((Office value) {
-                                  return DropdownMenuItem<Office>(
+                                items: snapshot.data?.map((OfficesGet200ResponseInner value) {
+                                  return DropdownMenuItem<OfficesGet200ResponseInner>(
                                     value: value,
-                                    child: Text(value.name),
+                                    child: Text(value.name!),
                                   );
                                 }).toList(),
-                                onChanged: (_) {},
+                                onChanged: (value) {
+                                  if (value == null)
+                                  {
+                                    office_id = null;
+                                    return;
+                                  }
+                                  office_id = value.officeId;
+                                },
                                 validator: (value) {
                                   if (value == null) {
                                     return 'Please select an address';
@@ -206,14 +211,10 @@ class _PassengerAddDesireScreenState extends State<PassengerAddDesireScreen> {
                   child: Text('Check route'),
                     onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      List<Location> locations = [];
+                      var my_location = MyLocation(latitude: 0, longitude: 0);
                       try
                       {
-                        locations = await locationFromAddress(_fromController.text);
-                        if (locations.isEmpty)
-                        {
-                          throw Exception('Address not found');
-                        }
+                        my_location = await getLocation(_fromController.text);
                       }
                       catch (e)
                       {
@@ -236,11 +237,10 @@ class _PassengerAddDesireScreenState extends State<PassengerAddDesireScreen> {
                         );
                         return;
                       }
-                      var loc = locations.first;
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          var message = 'From: ${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)}\n' +
+                          var message = 'From: ${my_location.latitude.toStringAsFixed(5)}, ${my_location.longitude.toStringAsFixed(5)}\n' +
                             'To: Office 1\n' +
                             'Time from: ${time_from.format(context)}\n' +
                             'Time to: ${time_to.format(context)}\n' +
@@ -257,7 +257,23 @@ class _PassengerAddDesireScreenState extends State<PassengerAddDesireScreen> {
                                 child: Text('Close'),
                               ),
                               TextButton(
-                                onPressed: () {
+                                onPressed: () async {
+                                  if (office_id == null) return;
+                                  var prefs = await SharedPreferences.getInstance();
+                                  var user_id = prefs.getString('user_hash');
+                                  var builder = PassengerRouteInputBuilder();
+                                  builder.startPoint.latitude = my_location.latitude;
+                                  builder.startPoint.longitude = my_location.longitude;
+                                  var dt = DateRangeBuilder();
+                                  dt.startDate = 0;
+                                  dt.endDate = 1;
+                                  builder.timeRange = dt;
+                                  builder.officeId = office_id;
+                                  builder.maxDist = distance;
+                                  var dto = builder.build();
+                                  var reply = await context.read<APIProvider>().api.getDefaultApi()
+                                    .passengerRoutesToPost( passengerRouteInput: dto);
+                                  
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                 },

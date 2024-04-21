@@ -11,6 +11,7 @@ import 'driver_route.dart';
 import 'passenger.dart';
 import 'passenger_add_desire.dart';
 import 'passenger_desire.dart';
+import 'match_screen.dart';
 import 'api_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -33,11 +34,17 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
 
         // Define the default brightness and colors.
+        primaryColor: Colors.green[300],
+        primaryColorLight: Colors.lightGreen[400],
+        secondaryHeaderColor: Colors.lightBlue[400],
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
+          seedColor: Colors.lightGreen,
+          primary: Colors.green[700],
+          secondary: Colors.lightBlue[700],
           // ···
           brightness: Brightness.light,
         ),
+       
       ),
       initialRoute: '/',
       routes: {
@@ -50,6 +57,7 @@ class MyApp extends StatelessWidget {
         '/passenger': (context) => PassengerScreen(),
         '/passenger/add_desire': (context) => PassengerAddDesireScreen(),
         '/passenger/desire': (context) => PassengerDesireScreen(),
+        '/passenger/desire/match': (context) => MatchScreen(),
       },
     );
   }
@@ -60,30 +68,21 @@ class StartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenFrame(
       canPop: false,
-      title: 'Start Screen',
+      title: '',
       body: Center(
-        child: ElevatedButton(
-          child: Text('Start!'),
-          onPressed: () async {
+        child: GestureDetector(
+          
+          child: Image(image: AssetImage('images/regis.png')),
+          onTap: () async {
             SharedPreferences.getInstance().then((prefs) async {
               var hash = prefs.getString('user_hash');
               if (hash == null || hash.isEmpty) {
                 Navigator.pushNamed(context, '/signup');
                 return;
               }
-              var reply;
-              try
-              {
-                var reply = await context.read<APIProvider>().api.getDefaultApi()
+              var reply = await context.read<APIProvider>().api.getDefaultApi()
                     .usersValidationGet(userId: hash);
-              }
-              catch (e)
-              {
-                print('Error on request');
-                prefs.remove('user_hash');
-                Navigator.pushNamed(context, '/signup');
-                return;
-              }
+
               if (reply.statusCode == null)
               {
                 prefs.remove('user_hash');

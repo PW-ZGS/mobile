@@ -2,7 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:regis_mobile/screen_frame.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:openapi/openapi.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'offices.dart';
+import 'geocode.dart';
+import 'api_provider.dart';
+import 'package:provider/provider.dart';
+
 
 class Office
 {
@@ -20,15 +26,8 @@ class _DriverAddRouteScreenState extends State<DriverAddRouteScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fromController = TextEditingController();
   TimeOfDay time = TimeOfDay(hour: 8, minute: 0);
-
-
-
-  Future<List<Office>> fetch_offices() async
-  {
-
-    await Future.delayed(Duration(seconds: 1));
-    return [Office(id: 1, name: 'Office 1'), Office(id: 2, name: 'Office 2')];
-  }
+  String? office_id = null;
+  String? office_name = null;
 
   @override
   Widget build(BuildContext context) {
@@ -93,26 +92,35 @@ class _DriverAddRouteScreenState extends State<DriverAddRouteScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [ 
                     Text('To office'),
-                    FutureBuilder<List<Office>>(
-                      future: fetch_offices(),
-                      builder: (BuildContext context, AsyncSnapshot<List<Office>> snapshot) {
+                    FutureBuilder<List<OfficesGet200ResponseInner>>(
+                      future: fetch_offices(context),
+                      builder: (BuildContext context, AsyncSnapshot<List<OfficesGet200ResponseInner>> snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return Center(child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
                         } else {
-                          return DropdownButtonFormField<Office>(
+                          return DropdownButtonFormField<OfficesGet200ResponseInner>(
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: 'Select an address',
                                 ),
-                                items: snapshot.data?.map((Office value) {
-                                  return DropdownMenuItem<Office>(
+                                items: snapshot.data?.map((OfficesGet200ResponseInner value) {
+                                  return DropdownMenuItem<OfficesGet200ResponseInner>(
                                     value: value,
-                                    child: Text(value.name),
+                                    child: Text(value.name!),
                                   );
                                 }).toList(),
-                                onChanged: (_) {},
+                                onChanged: (value) {
+                                  if (value == null)
+                                  {
+                                    office_id = null;
+                                    office_name = null;
+                                    return;
+                                  }
+                                  office_name = value.name;
+                                  office_id = value.officeId;
+                                },
                                 validator: (value) {
                                   if (value == null) {
                                     return 'Please select an address';
@@ -122,7 +130,7 @@ class _DriverAddRouteScreenState extends State<DriverAddRouteScreen> {
                               );
                         }
                       },
-                    ),   
+                    ),      
                   ],
                 ),
               ),
@@ -132,8 +140,12 @@ class _DriverAddRouteScreenState extends State<DriverAddRouteScreen> {
                   child: Text('Check route'),
                     onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      List<Location> locations = await locationFromAddress(_fromController.text);
-                      if (locations.isEmpty)
+                      var my_location = MyLocation(latitude: 0, longitude: 0);
+                      try
+                      {
+                        my_location = await getLocation(_fromController.text);
+                      }
+                      catch (e)
                       {
                         showDialog(
                           context: context,
@@ -154,13 +166,12 @@ class _DriverAddRouteScreenState extends State<DriverAddRouteScreen> {
                         );
                         return;
                       }
-                      var loc = locations.first;
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: Text('Your route'),
-                            content: Text('From: ${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)} \nTo: Office 1\nTime: ${time.format(context)}'),
+                            content: Text('From: ${my_location.latitude.toStringAsFixed(5)}, ${my_location.longitude.toStringAsFixed(5)} \nOffice: ${office_name!}\nTime: ${time.format(context)}'),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -169,7 +180,30 @@ class _DriverAddRouteScreenState extends State<DriverAddRouteScreen> {
                                 child: Text('Close'),
                               ),
                               TextButton(
-                                onPressed: () {
+                                onPressed: () async{
+                                  if (office_id == null) return;
+                                  var prefs = await SharedPreferences.getInstance();
+                                  var user_id = prefs.getString('user_hash');
+                                  var builder = RouteInputBuilder();
+                                  builder.startPoint = LocationBuilder();
+                                  builder.startPoint.latitude = my_location.latitude;
+                                  builder.startPoint.longitude = my_location.longitude;
+                                  builder.fromTime = DateTime.utc(2024);
+                        
+                                  builder.userId = user_id;
+                                  builder.officeId = office_id;
+                                  builder.availableSeats = 4;
+                                  var dto = builder.build();
+                                  try
+                                  {
+                                    var reply = await context.read<APIProvider>().api.getDefaultApi()
+                                      .driverRoutesToPost( routeInput: dto);
+                                  }
+                                  catch(e)
+                                  {
+                                    ;
+                                  }
+
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                 },

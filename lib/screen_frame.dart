@@ -14,10 +14,10 @@ class ScreenFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: title.isEmpty ? null : AppBar(
         title: Text(title),
-        // leading: null,
-        // automaticallyImplyLeading: true,
+        leading: null,
+        automaticallyImplyLeading: false,
       ),
       body: body,
       floatingActionButton: Padding(

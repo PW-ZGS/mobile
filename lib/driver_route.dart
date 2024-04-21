@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:openapi/openapi.dart';
 import 'package:regis_mobile/screen_frame.dart';
 import 'driver.dart';
 
@@ -18,8 +19,7 @@ class _DriverRouteScreenState extends State<DriverRouteScreen> {
       body: Center(
         child: Column(
           children: [
-            Text('Id: ${desire.id}'),
-            Text('sub: ${desire.subtitle}'),
+            Text('Id: ${desire.routeId}'),
           ],
         ),
       ),
