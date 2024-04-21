@@ -17,6 +17,7 @@ part 'passenger_route_input.g.dart';
 /// * [startPoint] 
 /// * [timeRange] 
 /// * [maxDist] 
+/// * [userId] 
 @BuiltValue()
 abstract class PassengerRouteInput implements Built<PassengerRouteInput, PassengerRouteInputBuilder> {
   @BuiltValueField(wireName: r'officeId')
@@ -30,6 +31,9 @@ abstract class PassengerRouteInput implements Built<PassengerRouteInput, Passeng
 
   @BuiltValueField(wireName: r'maxDist')
   int? get maxDist;
+
+  @BuiltValueField(wireName: r'userId')
+  String? get userId;
 
   PassengerRouteInput._();
 
@@ -82,6 +86,13 @@ class _$PassengerRouteInputSerializer implements PrimitiveSerializer<PassengerRo
         specifiedType: const FullType(int),
       );
     }
+    if (object.userId != null) {
+      yield r'userId';
+      yield serializers.serialize(
+        object.userId,
+        specifiedType: const FullType(String),
+      );
+    }
   }
 
   @override
@@ -132,6 +143,13 @@ class _$PassengerRouteInputSerializer implements PrimitiveSerializer<PassengerRo
             specifiedType: const FullType(int),
           ) as int;
           result.maxDist = valueDes;
+          break;
+        case r'userId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.userId = valueDes;
           break;
         default:
           unhandled.add(key);

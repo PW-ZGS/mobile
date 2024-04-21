@@ -50,7 +50,8 @@ class _PassengerDesireScreenState extends State<PassengerDesireScreen> {
               return Text('Error: ${snapshot.error}');
             } else {
               return  snapshot.data!.isEmpty ? 
-              Center(child: Text('Currently no matches found. Please try again later.')) :
+              Center(child: Text('Currently no matches found.\nPlease try again later.',
+                style: TextStyle(fontSize: 24),textAlign: TextAlign.center,),) :
               ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) 

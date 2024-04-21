@@ -262,15 +262,17 @@ class _PassengerAddDesireScreenState extends State<PassengerAddDesireScreen> {
                                   var prefs = await SharedPreferences.getInstance();
                                   var user_id = prefs.getString('user_hash');
                                   var builder = PassengerRouteInputBuilder();
+                                  builder.userId = user_id;
                                   builder.startPoint.latitude = my_location.latitude;
                                   builder.startPoint.longitude = my_location.longitude;
                                   var dt = DateRangeBuilder();
-                                  dt.startDate = 0;
-                                  dt.endDate = 1;
+                                  dt.startDate = 10000;
+                                  dt.endDate = 20000;
                                   builder.timeRange = dt;
                                   builder.officeId = office_id;
                                   builder.maxDist = distance;
                                   var dto = builder.build();
+                                  print(dto.toString());
                                   var reply = await context.read<APIProvider>().api.getDefaultApi()
                                     .passengerRoutesToPost( passengerRouteInput: dto);
                                   

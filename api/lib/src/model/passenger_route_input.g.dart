@@ -15,13 +15,19 @@ class _$PassengerRouteInput extends PassengerRouteInput {
   final DateRange? timeRange;
   @override
   final int? maxDist;
+  @override
+  final String? userId;
 
   factory _$PassengerRouteInput(
           [void Function(PassengerRouteInputBuilder)? updates]) =>
       (new PassengerRouteInputBuilder()..update(updates))._build();
 
   _$PassengerRouteInput._(
-      {this.officeId, this.startPoint, this.timeRange, this.maxDist})
+      {this.officeId,
+      this.startPoint,
+      this.timeRange,
+      this.maxDist,
+      this.userId})
       : super._();
 
   @override
@@ -40,7 +46,8 @@ class _$PassengerRouteInput extends PassengerRouteInput {
         officeId == other.officeId &&
         startPoint == other.startPoint &&
         timeRange == other.timeRange &&
-        maxDist == other.maxDist;
+        maxDist == other.maxDist &&
+        userId == other.userId;
   }
 
   @override
@@ -50,6 +57,7 @@ class _$PassengerRouteInput extends PassengerRouteInput {
     _$hash = $jc(_$hash, startPoint.hashCode);
     _$hash = $jc(_$hash, timeRange.hashCode);
     _$hash = $jc(_$hash, maxDist.hashCode);
+    _$hash = $jc(_$hash, userId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -60,7 +68,8 @@ class _$PassengerRouteInput extends PassengerRouteInput {
           ..add('officeId', officeId)
           ..add('startPoint', startPoint)
           ..add('timeRange', timeRange)
-          ..add('maxDist', maxDist))
+          ..add('maxDist', maxDist)
+          ..add('userId', userId))
         .toString();
   }
 }
@@ -88,6 +97,10 @@ class PassengerRouteInputBuilder
   int? get maxDist => _$this._maxDist;
   set maxDist(int? maxDist) => _$this._maxDist = maxDist;
 
+  String? _userId;
+  String? get userId => _$this._userId;
+  set userId(String? userId) => _$this._userId = userId;
+
   PassengerRouteInputBuilder() {
     PassengerRouteInput._defaults(this);
   }
@@ -99,6 +112,7 @@ class PassengerRouteInputBuilder
       _startPoint = $v.startPoint?.toBuilder();
       _timeRange = $v.timeRange?.toBuilder();
       _maxDist = $v.maxDist;
+      _userId = $v.userId;
       _$v = null;
     }
     return this;
@@ -126,7 +140,8 @@ class PassengerRouteInputBuilder
               officeId: officeId,
               startPoint: _startPoint?.build(),
               timeRange: _timeRange?.build(),
-              maxDist: maxDist);
+              maxDist: maxDist,
+              userId: userId);
     } catch (_) {
       late String _$failedField;
       try {
